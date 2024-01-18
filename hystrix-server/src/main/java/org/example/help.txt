@@ -1,0 +1,50 @@
+1.依赖
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+    </dependency>
+
+
+
+2.application配置文件
+    feign日志
+    eureka 客户端配置
+    hystrix 超时异常配置
+
+3.启动类注解
+@EnableFeignClients
+@EnableEurekaClient
+@EnableCircuitBreaker
+
+4.接口类相关注解
+局部方法降级：
+@HystrixCommand(fallbackMethod = "helloFallback") 修饰要降级的方法
+helloFallback 局部降级方法
+
+全局降级：
+@DefaultProperties(defaultFallback = "globalFallback") 修饰类
+@HystrixCommand 修饰要降级的方法
+globalFallback 全局降级方法
+
+5.自动熔断与降级
+全局降级：
+@DefaultProperties(defaultFallback = "globalFallback") 修饰类
+@HystrixCommand 修饰要降级的方法
+globalFallback 全局降级方法
+
+hystrix 自动熔断配置

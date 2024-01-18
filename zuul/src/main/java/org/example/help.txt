@@ -1,0 +1,57 @@
+1.依赖
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+    </dependency>
+
+2.启动类注解
+@EnableEurekaClient
+@EnableZuulProxy
+
+
+3.application配置
+# 路由规则
+#zuul:
+#  ignored-services: consumer-server,provider-server
+#  ignored-services: '*'
+#  strip-prefix: false
+#  ignoredPatterns: /**/admin/** #忽略所有包含/admin/的路径
+#  routes:
+#    student:                # 配置的微服务路由id，微服务实例id --可自定义
+#      path: /api/**     # 请求路径(前缀)，匹配规则：localhost:6000/article-service/abc
+##      url: http://127.0.0.1:7003   # 转发请求到指定微服务的ip地址
+#      service-id: student     # 请求转发的微服务实例id
+##  prefix: /api  # 前缀
+
+zuul:
+#  prefix: /api  # 前缀
+  routes:
+    # 由于路由id和微服务id相同，那么转发配置可以简化
+    student: /api/**
+
+
+本地转发
+zuul:
+  prefix: /rest
+  routes:
+    local:
+      path: /api/**
+      url: forward:/local
+当我们想在访问 api/1 的时候会路由到本地的 local/1 上去
+
+

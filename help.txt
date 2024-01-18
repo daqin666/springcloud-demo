@@ -1,0 +1,7 @@
+eureka-server: 7000
+eureka-client: 7001
+student: 7003
+openFeign: 7004
+hystrix-server: 7005
+hystrix-client: 7006
+zuul: 7007

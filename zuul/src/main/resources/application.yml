@@ -1,0 +1,71 @@
+
+server:
+  port: 7007
+  tomcat:
+    uri-encoding: UTF-8
+#  servlet:
+#    context-path: /zuul
+############################################################
+#
+# 配置项目信息
+#
+############################################################
+spring:
+  application:
+    name: zuul
+############################################################
+#
+# eureka client 配置信息
+#
+############################################################
+eureka:
+  # 自定义eureka server的信息
+  server:
+    hostname: 127.0.0.1 # eureka
+    port: 7000
+  client:
+    # 所有的微服务都必须注册到eureka中
+    register-with-eureka: true
+    # 从注册中心获得检索服务实例
+    fetch-registry: true
+    # 注册中心的服务地址
+    service-url:
+      defaultZone: http://${eureka.server.hostname}:${eureka.server.port}/eureka/
+      #      defaultZone: http://eureka-cluster-7001:7001/eureka/,http://eureka-cluster-7002:7002/eureka/,http://eureka-cluster-7003:7003/eureka/
+
+    # 开启健康监测
+    healthcheck:
+      enabled: true
+  instance:
+#    instance-id: ${spring.application.name}
+    # 调整微服务（eureka client）和注册中心（eureka server）的心跳时间，默认30s
+    lease-renewal-interval-in-seconds: 3
+    # 表示eureka server至上一次收到client的心跳之后，等待下一次心跳的超时时间，
+    # 在这个时间内若没收到下一次心跳，则将移除该instance
+    lease-expiration-duration-in-seconds: 5   # eureka 距离最近的一次心跳等待提出的时间，默认90s
+
+#info配置
+#info:
+#  # 项目的名称
+#  app.name: springcloud-demo-eureka-client
+#  # 公司的名称
+#  company.name: com.test
+
+# 路由规则
+#zuul:
+#  routes:
+#    student:                # 配置的微服务路由id，微服务实例id --可自定义
+#      path: /api/**     # 请求路径(前缀)，匹配规则：localhost:6000/article-service/abc
+##      url: http://127.0.0.1:7003   # 转发请求到指定微服务的ip地址
+#      service-id: student     # 请求转发的微服务实例id
+##  prefix: /api  # 前缀
+
+zuul:
+#  prefix: /api  # 前缀
+  routes:
+    # 由于路由id和微服务id相同，那么转发配置可以简化
+    student: /api/**
+
+#ribbon:
+#  ConnectTimeout: 5000
+#  ReadTimeout: 60000

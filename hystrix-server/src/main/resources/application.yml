@@ -1,0 +1,108 @@
+
+server:
+  port: 7005
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /hystrix-server
+############################################################
+#
+# 配置项目信息
+#
+############################################################
+spring:
+  application:
+    name: hystrix-server
+############################################################
+#
+# eureka client 配置信息
+#
+############################################################
+eureka:
+  # 自定义eureka server的信息
+  server:
+    hostname: 127.0.0.1 # eureka
+    port: 7000
+  client:
+    # 所有的微服务都必须注册到eureka中
+    register-with-eureka: true
+    # 从注册中心获得检索服务实例
+    fetch-registry: true
+    # 注册中心的服务地址
+    service-url:
+      defaultZone: http://${eureka.server.hostname}:${eureka.server.port}/eureka/
+      #      defaultZone: http://eureka-cluster-7001:7001/eureka/,http://eureka-cluster-7002:7002/eureka/,http://eureka-cluster-7003:7003/eureka/
+
+    # 开启健康监测
+    healthcheck:
+      enabled: true
+  instance:
+#    instance-id: ${spring.application.name}
+    # 调整微服务（eureka client）和注册中心（eureka server）的心跳时间，默认30s
+    lease-renewal-interval-in-seconds: 3
+    # 表示eureka server至上一次收到client的心跳之后，等待下一次心跳的超时时间，
+    # 在这个时间内若没收到下一次心跳，则将移除该instance
+    lease-expiration-duration-in-seconds: 5   # eureka 距离最近的一次心跳等待提出的时间，默认90s
+
+#info配置
+#info:
+#  # 项目的名称
+#  app.name: springcloud-demo-eureka-client
+#  # 公司的名称
+#  company.name: com.test
+
+
+ribbon:
+  ConnectTimeout: 5000          # 创建连接的超时时间，单位：ms
+  ReadTimeout: 5000             # 在连接创建好以后，调用接口的超时时间，单位：ms
+  MaxAutoRetries: 1             # 最大重试次数
+#  OkToRetryOnAllOperations: true
+  MaxAutoRetriesNextServer: 1   # 切换到下个实例的重试次数
+  # 当请求到某个微服务5s，超时后会进行重试，先重新连接自己当前这个实例，
+  # 如果失败1次后，会切换访问集群中的下一个微服务实例，切换最大2次
+
+
+#logging:
+#  level:
+#    org.example.feign.StudentFeign: debug
+##    org.example.feign.*: debug
+##    root: debug
+#
+## 开启feign日志
+#feign:
+#  client:
+#    config:
+##      default:
+##        loggerLevel: FULL
+#      # 配置服务提供者的名称
+#      student:
+#        loggerLevel: FULL
+
+#feign:
+#  client:
+#    config:
+#      default:
+#        #建立连接所用的时间，适用于网络状况正常的情况下，两端连接所需要的时间
+#        connectTimeout: 3000
+#        #指建立连接后从服务端读取到可用资源所用的时间
+#        readTimeout: 10000
+#      student:
+#        #建立连接所用的时间，适用于网络状况正常的情况下，两端连接所需要的时间
+#        connectTimeout: 3000
+#        #指建立连接后从服务端读取到可用资源所用的时间
+#        readTimeout: 10000
+
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 2000   # 设置hystrix超时时间，超过2秒触发降级
+      # 自动熔断和降级
+      circuitBreaker: # 配置断路器
+        enabled: true
+        requestVolumeThreshold: 10    # 触发熔断最小请求次数，默认：20
+        sleepWindowInMilliseconds: 15000    # 熔断后过几秒后尝试半开状态（请求重试），默认：5s
+        errorThresholdPercentage: 50  # 触发熔断的失败率（异常率/阈值），默认：50

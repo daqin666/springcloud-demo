@@ -1,0 +1,60 @@
+1.依赖
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+    </dependency>
+
+
+
+2.application配置文件
+    feign日志
+    eureka 客户端配置
+    feign-hystrix 熔断开启
+        feign:
+          hystrix:
+            enabled: true
+
+3.启动类注解
+@EnableFeignClients
+@EnableEurekaClient
+@EnableHystrix
+
+4.feign接口类相关配置
+@FeignClient(value = "student", path = "student", fallbackFactory = StudentFallback.class)
+
+
+5.fallbackFactory 降级类
+@Component
+public class StudentFallback implements FallbackFactory<StudentFeign> {
+
+    @Override
+    public StudentFeign create(Throwable throwable) {
+        return new StudentFeign() {
+            @Override
+            public String hello() {
+                return "student hello fallback...";
+            }
+
+            @Override
+            public String hello2() {
+                return "student hello2 fallback...";
+            }
+        };
+    }
+}
+

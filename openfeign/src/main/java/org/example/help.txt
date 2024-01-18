@@ -1,0 +1,126 @@
+默认负载均衡模式为 轮训模式
+
+1.依赖注册中心方式：
+1.1 依赖
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+
+    # 如果开启健康检测就需要如下依赖，还有info信息
+    # 开启健康监测 healthcheck.enabled: true
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+
+
+1.2 application配置文件
+    feign日志
+        # feign接口日志配置
+        logging:
+          level:
+            org.example.feign.StudentFeign: debug
+        #    org.example.feign.*: debug
+        #    root: debug
+
+        # 开启feign日志
+        feign:
+          client:
+            config:
+        #      default:
+        #        loggerLevel: FULL
+              # 配置服务提供者的名称
+              student:
+                loggerLevel: FULL
+    eureka 客户端配置
+
+1.3 启动类注解
+@EnableFeignClients
+@EnableEurekaClient
+
+1.4 配置feign接口类
+value的值是注册中心中的服务名称，path 是服务中配置的 context-path 得值
+@FeignClient(value = "student", path = "student")
+public interface StudentFeign {
+    @GetMapping(path = "test/hello")
+    public String hello();
+}
+
+
+2.不依赖注册中心的方式：
+2.1 依赖
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+2.2 application配置文件
+    feign日志
+
+2.3 启动类注解
+@EnableFeignClients
+
+2.4 配置feign接口类
+name 服务名称，url 具体的接口路由地址前缀
+@FeignClient(name = "student", url = "localhost:7003/student")
+public interface StudentFeign {
+    @GetMapping(path = "test/hello")
+    public String hello();
+}
+
+
+
+3.feign日志大致信息
+[StudentFeign#hello] <--- HTTP/1.1 200 (206ms)
+[StudentFeign#hello] connection: keep-alive
+[StudentFeign#hello] content-length: 12
+[StudentFeign#hello] content-type: application/json;charset=UTF-8
+[StudentFeign#hello] date: Wed, 17 Jan 2024 09:19:28 GMT
+[StudentFeign#hello] keep-alive: timeout=60
+[StudentFeign#hello]
+[StudentFeign#hello] hello world!
+[StudentFeign#hello] <--- END HTTP (12-byte body)
+
+
+
+4.配置feign超时时间
+有多中配置方式，如约定、bean配置、代码等
+我们使用约定的配置方式
+也可以不配置，使用默认的配置，连接超时1s，读取超时1s，重试1次
+
+配置的话可以通过配置 ribbon 超时时间，也可以直接配置 feign 超时时间，两个都配置的话，以 feign 的为主
+其中还有 Hystrix 超时时间配置，需要注意
+Hystrix超时时间 >= (连接超时时间 + 读超时时间) * 重试次数
+不然会导致程序还没运行完，也没超时，就执行了降级
+
+
+5.契约形式
+OpenFeign升级兼容了springMVC的注解，如@RequestMapping等，但是feign没有兼容，所以在 springcloud1 中还是使用的
+feign，用的是一些源生的feign注解，如果想要兼容这写注解，又想升级为OpenFeign，可以使用契约形式
+方式一：
+@Configuration
+public class FeignConfig {
+    @Bean
+    public Request.Options options(){
+        return new Request.Options(5000,10000);
+    }
+}
+
+方式二：
+feign:
+  client:
+    config:
+      product-service:
+        loggerLevel: BASIC
+        contract: feign.Contract.Default #设置为默认的契约（还原成原生注解）
+        # 连接超时时间 默认2s
+        connectTimeout: 5000
+        # 请求处理超时时间 默认5s
+        readTimeout: 3000
